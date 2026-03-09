@@ -117,6 +117,12 @@ async def main() -> None:
     symbols = sorted({sym for tri in config.TRIANGLES for (sym, _) in tri["legs"]})
     state.init_tob(symbols)
 
+    print(f"[Telegram] Включён={config.TELEGRAM_ENABLED}, токен задан={bool(config.TELEGRAM_BOT_TOKEN)}, chat_id задан={bool(config.TELEGRAM_CHAT_ID)}")
+    if config.TELEGRAM_ENABLED and config.TELEGRAM_BOT_TOKEN and config.TELEGRAM_CHAT_ID:
+        telegram_notify.send_startup_message()
+    elif config.TELEGRAM_ENABLED and (not config.TELEGRAM_BOT_TOKEN or not config.TELEGRAM_CHAT_ID):
+        print("[Telegram] Задайте TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID в .env")
+
     print("[OK] Бот запущен. Ожидание котировок с Binance… Раз в 30 сек — статус в консоль.")
     tasks = [
         ws_feed.ws_book_ticker(symbols),

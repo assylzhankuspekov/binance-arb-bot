@@ -5,6 +5,32 @@
 import os
 from decimal import Decimal
 
+# Загрузить переменные из .env (путь от папки с config.py)
+_env_dir = os.path.dirname(os.path.abspath(__file__))
+_env_path = os.path.join(_env_dir, ".env")
+try:
+    from dotenv import load_dotenv
+    if os.path.isfile(_env_path):
+        load_dotenv(_env_path, encoding="utf-8-sig")
+    else:
+        print(f"[Config] Файл .env не найден: {_env_path}")
+except ImportError:
+    pass
+# Запасная загрузка Telegram из .env, если dotenv не подхватил
+if (not os.environ.get("TELEGRAM_BOT_TOKEN") or not os.environ.get("TELEGRAM_CHAT_ID")) and os.path.isfile(_env_path):
+    try:
+        with open(_env_path, "r", encoding="utf-8-sig") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, _, val = line.partition("=")
+                key, val = key.strip(), val.strip().strip('"').strip("'")
+                if key in ("TELEGRAM_ENABLED", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "TELEGRAM_DAILY_HOUR"):
+                    os.environ[key] = val
+    except Exception as e:
+        print(f"[Config] Ошибка чтения .env: {e}")
+
 # API (для live — подставьте ключи или читайте из env)
 API_KEY = os.environ.get("BINANCE_API_KEY", "PUT_YOUR_KEY")
 API_SECRET = os.environ.get("BINANCE_API_SECRET", "PUT_YOUR_SECRET")
@@ -47,10 +73,11 @@ TRADES_CSV = os.path.join(LOG_DIR, "arb_trades_v3_1.csv")
 STATE_CSV = os.path.join(LOG_DIR, "arb_state_v3_1.csv")
 
 # Telegram: ежедневный отчёт в 8:00 и уведомления о сделках
-TELEGRAM_ENABLED = os.environ.get("TELEGRAM_ENABLED", "false").lower() in ("1", "true", "yes")
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")  # от @BotFather
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")     # ID группы (например -1001234567890)
-TELEGRAM_DAILY_HOUR = int(os.environ.get("TELEGRAM_DAILY_HOUR", "8"))  # час отправки ежедневного отчёта (локальное время)
+# Токен и chat_id — из переменных окружения или подставьте сюда (не коммитьте в git).
+TELEGRAM_ENABLED = os.environ.get("TELEGRAM_ENABLED", "true").strip().lower() in ("1", "true", "yes")
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+TELEGRAM_DAILY_HOUR = int(os.environ.get("TELEGRAM_DAILY_HOUR", "8").strip() or "8")
 
 TRIANGLES = [
     {"name": "USDT-BTC-ETH-USDT",

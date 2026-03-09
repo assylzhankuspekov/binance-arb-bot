@@ -16,7 +16,7 @@
 ## Требования
 
 - Python 3.10+
-- Зависимости: `ccxt`, `websockets`, `requests` (Telegram), `pytest` (для тестов)
+- Зависимости: `ccxt`, `websockets`, `requests` (Telegram), `python-dotenv` (опционально, для .env), `pytest` (для тестов)
 
 ## Установка
 
@@ -58,6 +58,17 @@ python main.py
 - `TELEGRAM_BOT_TOKEN` — токен от @BotFather
 - `TELEGRAM_CHAT_ID` — ID группы (например `-1001234567890`; как получить: добавить бота в группу, отправить сообщение, открыть `https://api.telegram.org/bot<TOKEN>/getUpdates`, в ответе смотреть `chat.id`)
 - `TELEGRAM_DAILY_HOUR=8` — час отправки ежедневного отчёта (по умолчанию 8:00 локального времени сервера)
+
+### Переменные окружения и перенос на сервер
+
+**1. Нужно ли каждый раз вводить переменные перед запуском?**  
+Нет. Создайте один раз файл `.env` в корне проекта (скопируйте `.env.example` в `.env` и подставьте значения). Бот подхватит переменные при старте. Файл `.env` в `.gitignore`, в репозиторий не попадёт.
+
+**2. Как загружать токены на сервере?**
+
+- **Файл .env** — на сервере создайте `.env` в корне проекта с `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` и т.д. Запуск: `python main.py`.
+- **systemd** — в unit-файле в секции `[Service]`: `Environment="TELEGRAM_BOT_TOKEN=..."` или `EnvironmentFile=/path/to/.env`.
+- **Docker** — `docker run -e TELEGRAM_BOT_TOKEN=... -e TELEGRAM_CHAT_ID=...` или `--env-file .env`.
 
 ## Тесты
 
